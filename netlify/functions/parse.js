@@ -32,7 +32,6 @@ exports.handler = async (event) => {
     }
   }
 
-  // ================== 主要修改逻辑开始 ==================
   // 如果是请求视频链接，执行以下新逻辑
   try {
     // 1. 先从你的 API 获取会 302 跳转的链接
@@ -70,5 +69,4 @@ exports.handler = async (event) => {
       body: JSON.stringify({ error: 'Failed to get or resolve video URL.' }),
     };
   }
-  // ================== 主要修改逻辑结束 ==================
 };
