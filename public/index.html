@@ -31,9 +31,18 @@
 
             <div id="result-container" class="hidden">
                 <div class="video-wrapper">
-                    <video id="video-player" controls></video>
+                    <video id="video-player" controls preload="metadata"></video>
                     <a id="download-button" class="button" href="#" download="douyin_video.mp4">下载视频</a>
                 </div>
+
+                <div class="link-info">
+                    <h3>原始链接 (会跳转)</h3>
+                    <div class="link-wrapper">
+                        <span id="original-link"></span>
+                        <button id="copy-button">复制</button>
+                    </div>
+                </div>
+
                 <div class="video-info">
                     <h2>视频信息</h2>
                     <p id="video-title"><strong>标题：</strong><span></span></p>
