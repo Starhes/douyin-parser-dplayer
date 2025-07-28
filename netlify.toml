@@ -1,0 +1,16 @@
+# Netlify 配置文件
+
+[build]
+  # 前端文件所在的目录
+  publish = "public"
+  # Netlify Functions 所在的目录
+  functions = "netlify/functions"
+
+# 这是一个重定向规则，让前端可以方便地用 /api 访问函数
+# 但在这个例子中，我们直接用 /.netlify/functions/parse 路径，所以可以不用这个
+# 如果想用更简洁的 /api/parse 路径，可以取消下面的注释
+#
+# [[redirects]]
+#   from = "/api/*"
+#   to = "/.netlify/functions/:splat"
+#   status = 200
