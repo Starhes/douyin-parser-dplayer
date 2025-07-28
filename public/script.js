@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // 获取页面上的所有交互元素
     const shareInput = document.getElementById('share-input');
     const parseButton = document.getElementById('parse-button');
     const loadingDiv = document.getElementById('loading');
@@ -12,25 +13,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const likeCount = document.getElementById('like-count');
     const commentCount = document.getElementById('comment-count');
     const shareCount = document.getElementById('share-count');
+    
+    // 新增元素的获取
+    const originalLinkSpan = document.getElementById('original-link');
+    const copyButton = document.getElementById('copy-button');
 
+    // 为“立即解析”按钮绑定点击事件
     parseButton.addEventListener('click', handleParse);
 
-    // 允许在文本域中按 Enter 键 (Ctrl+Enter) 触发解析
+    // 为“复制”按钮绑定点击事件
+    copyButton.addEventListener('click', handleCopy);
+
+
+    // 允许在文本域中使用 Ctrl+Enter 或 Command+Enter 快捷键来触发解析
     shareInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
             handleParse();
         }
     });
 
+    /**
+     * 主解析函数
+     */
     async function handleParse() {
-        // 1. 重置界面
         hideError();
         resultContainer.classList.add('hidden');
         loadingDiv.classList.remove('hidden');
         parseButton.disabled = true;
         parseButton.textContent = '解析中...';
 
-        // 2. 提取链接
         const inputText = shareInput.value;
         const douyinUrl = extractUrl(inputText);
 
@@ -41,55 +52,91 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         try {
-            // 3. 并行请求视频链接和视频信息
-            // 使用我们自己的 Netlify Function 代理
-            const apiEndpoint = `/.netlify/functions/parse?url=${encodeURIComponent(douyinUrl)}`;
+            // 现在两个请求都从我们的后端函数获取
+            const urlEndpoint = `/.netlify/functions/parse?url=${encodeURIComponent(douyinUrl)}`;
+            const infoEndpoint = `/.netlify/functions/parse?data&url=${encodeURIComponent(douyinUrl)}`;
 
-            const [videoUrl, videoInfo] = await Promise.all([
-                fetch(apiEndpoint).then(res => res.text()),
-                fetch(`${apiEndpoint}&data`).then(res => res.json())
+            // 并行发起请求
+            const [urlData, videoInfo] = await Promise.all([
+                fetch(urlEndpoint).then(res => res.json()), // 这里现在接收 JSON
+                fetch(infoEndpoint).then(res => res.json())
             ]);
             
-            if (videoInfo.error || !videoUrl || videoUrl.startsWith('<')) {
-                 throw new Error(videoInfo.error || '无法获取视频链接，API 可能返回了错误页面。');
+            // 检查API返回是否成功
+            if (urlData.error || videoInfo.error) {
+                 throw new Error(urlData.error || videoInfo.error || 'API 返回错误');
             }
 
-            // 4. 更新界面
-            updateResult(videoUrl, videoInfo);
+            // 更新前端界面
+            updateResult(urlData, videoInfo);
 
         } catch (error) {
             console.error('解析失败:', error);
             showError(error.message || '解析失败，请检查链接或稍后再试。');
         } finally {
-            // 5. 恢复按钮状态
             resetUI();
         }
     }
 
+    /**
+     * 从文本中提取URL
+     */
     function extractUrl(text) {
-        // 使用正则表达式匹配抖音分享链接
         const regex = /(https?:\/\/v\.douyin\.com\/[a-zA-Z0-9]+)/;
         const match = text.match(regex);
         return match ? match[0] : null;
     }
 
-    function updateResult(url, info) {
-        loadingDiv.classList.add('hidden');
-        
-        // 更新视频播放器和下载链接
-        videoPlayer.src = url;
-        downloadButton.href = url;
-        // 使用视频标题或作者名作为建议的文件名
+    /**
+     * 将结果更新到页面
+     * @param {object} urlData - 包含 originalUrl 和 finalUrl 的对象
+     * @param {object} info - 包含视频所有信息的对象
+     */
+    function updateResult(urlData, info) {
+        const { originalUrl, finalUrl } = urlData;
+
+        // 视频预览和下载使用跳转后的最终链接
+        videoPlayer.src = finalUrl;
+        downloadButton.href = finalUrl;
         downloadButton.download = `${info.nickname || 'douyin'}-${info.desc || 'video'}.mp4`;
 
-        // 更新视频信息
+        // 显示 API 返回的原始链接
+        originalLinkSpan.textContent = originalUrl;
+
+        // 更新视频元数据信息
         videoTitle.textContent = info.desc || '无标题';
         videoAuthor.textContent = info.nickname || '未知作者';
         likeCount.textContent = formatNumber(info.digg_count);
         commentCount.textContent = formatNumber(info.comment_count);
         shareCount.textContent = formatNumber(info.share_count);
 
+        // 显示结果区域
         resultContainer.classList.remove('hidden');
+    }
+
+    /**
+     * 处理复制按钮点击事件
+     */
+    function handleCopy() {
+        const linkToCopy = originalLinkSpan.textContent;
+        if (!linkToCopy) return;
+
+        navigator.clipboard.writeText(linkToCopy).then(() => {
+            // 复制成功后的用户反馈
+            const originalText = copyButton.textContent;
+            copyButton.textContent = '已复制!';
+            copyButton.style.backgroundColor = '#FE2C55';
+            copyButton.style.color = '#fff';
+
+            setTimeout(() => {
+                copyButton.textContent = originalText;
+                copyButton.style.backgroundColor = '';
+                copyButton.style.color = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('复制失败: ', err);
+            alert('复制失败，请手动复制。');
+        });
     }
 
     function showError(message) {
