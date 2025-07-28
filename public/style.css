@@ -74,7 +74,7 @@ textarea:focus {
     box-shadow: 0 0 0 3px rgba(254, 44, 85, 0.2);
 }
 
-.button, button {
+.button, button#parse-button {
     width: 100%;
     padding: 15px;
     font-size: 18px;
@@ -90,7 +90,7 @@ textarea:focus {
     box-sizing: border-box;
 }
 
-button:hover, .button:hover {
+button#parse-button:hover, .button:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(255, 65, 108, 0.3);
 }
@@ -185,4 +185,64 @@ footer {
     border-top: 1px solid var(--border-color);
     color: var(--text-light);
     font-size: 14px;
+}
+
+/* 新增链接区域的样式 */
+.link-info {
+    margin-top: 25px;
+    margin-bottom: 25px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.link-info h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: var(--primary-color);
+}
+
+.link-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+#original-link {
+    flex-grow: 1;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    color: var(--text-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 超出部分显示省略号 */
+}
+
+#copy-button {
+    flex-shrink: 0;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--secondary-color);
+    background-color: #fff;
+    border: 1px solid var(--secondary-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+#copy-button:hover {
+    background-color: var(--secondary-color);
+    color: #fff;
+    transform: translateY(0); /* 覆盖全局按钮的 hover 效果 */
+    box-shadow: none; /* 覆盖全局按钮的 hover 效果 */
+}
+
+#copy-button:active {
+    transform: scale(0.95);
 }
