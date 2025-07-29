@@ -44,7 +44,7 @@ exports.handler = async (event) => {
 
     // 2. 请求这个会跳转的链接，fetch 会自动处理 302 跳转
     //    最终的 response.url 就是跳转后的地址
-    const finalResponse = await fetch(originalUrl);
+    const finalResponse = await fetch(originalUrl, { referrerPolicy: "no-referrer" });
     if (!finalResponse.ok) {
         throw new Error(`Failed to follow redirect from: ${originalUrl}`);
     }
